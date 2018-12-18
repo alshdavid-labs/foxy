@@ -8,11 +8,12 @@
 *.com
 *.class
 *.dll
-*.exe
 *.exe~
 *.o
 *.so
 *.dylib
+.bin
+node_modules
 
 *.7z
 *.dmg
@@ -22,6 +23,7 @@
 *.rar
 *.tar
 *.zip
+*.tgz
 
 # Logs and databases
 *.log

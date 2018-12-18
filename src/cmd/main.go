@@ -1,74 +1,78 @@
 package main
 
 import (
-	"bytes"
 	"flag"
-	"io"
+	"fmt"
+	"foxy/platform"
 	"io/ioutil"
-	"log"
 	"os"
-	"os/exec"
-
-	"gopkg.in/yaml.v2"
+	"sync"
 )
 
-type FoxyEvent struct {
-	Context string   `yaml:"context"`
-	Watch   string   `yaml:"watch"`
-	Steps   []string `yaml:"steps,flow"`
-	Env     []string `yaml:"env,flow"`
-	EnvFile string   `yaml:"string"`
+var acceptedFileNames = []string{
+	"foxy.yml",
+	"FOXY.yml",
+	"foxyfile.yml",
+	"FOXYFILE.yml",
+	"foxyfile",
+	"FOXYFILE",
+	"foxy",
+	"FOXY",
 }
 
-func loadYaml(data string) map[string]FoxyEvent {
-	m := make(map[string]FoxyEvent)
-	yaml.Unmarshal([]byte(data), &m)
-	return m
-}
-
-func runCommand(command string) {
-	var stdoutBuf, stderrBuf bytes.Buffer
-
-	cmd := exec.Command("/bin/bash", "-c", command)
-
-	stdoutIn, _ := cmd.StdoutPipe()
-	stderrIn, _ := cmd.StderrPipe()
-
-	var errStdout, errStderr error
-	stdout := io.MultiWriter(os.Stdout, &stdoutBuf)
-	stderr := io.MultiWriter(os.Stderr, &stderrBuf)
-	err := cmd.Start()
-	if err != nil {
-		log.Fatalf("cmd.Start() failed with '%s'\n", err)
+func tryGetFoxyFile(defaults []string) string {
+	var found string
+	for _, pathname := range defaults {
+		if _, err := os.Stat(pathname); !os.IsNotExist(err) {
+			found = pathname
+			break
+		}
 	}
-
-	go func() {
-		_, errStdout = io.Copy(stdout, stdoutIn)
-	}()
-
-	go func() {
-		_, errStderr = io.Copy(stderr, stderrIn)
-	}()
-
-	_ = cmd.Wait()
+	return found
 }
 
 func main() {
-	var foxyFilePath string
-	flag.StringVar(&foxyFilePath, "file", "./foxyfile.yml", "a string")
+	var chosenTask platform.FoxyTask
+	foxyFilePath := tryGetFoxyFile(acceptedFileNames)
+
+	flag.StringVar(&foxyFilePath, "file", foxyFilePath, "a string")
+	flag.StringVar(&foxyFilePath, "f", foxyFilePath, "a string")
 	flag.Parse()
+
 	foxyYamlBinary, _ := ioutil.ReadFile(foxyFilePath)
-	foxyYaml := string(foxyYamlBinary)
-	foxyData := loadYaml(foxyYaml)
-	foxyChosenEvent := os.Args[len(os.Args)-1]
+	taskData := platform.LoadYaml(string(foxyYamlBinary))
 
-	// fmt.Println(foxyFilePath)
-	// fmt.Println(foxyYaml)
-	// fmt.Println(foxyChosenEvent)
+	if len(os.Args) != 1 {
+		chosenTask = platform.FindTask(os.Args[len(os.Args)-1], taskData)
+	}
 
-	// fmt.Println(foxyData[foxyChosenEvent])
+	if chosenTask.Set == false {
+		chosenTask = platform.FindDefault(taskData)
+	}
 
-	for _, step := range foxyData[foxyChosenEvent].Steps {
-		runCommand(step)
+	if chosenTask.Set == false {
+		fmt.Printf("No sequence selected")
+		os.Exit(1)
+	}
+
+	var environment []platform.EnvVar
+	environment = append(environment, platform.CastEnvFile(chosenTask.EnvFile)...)
+	environment = append(environment, platform.CastEnvArguments(chosenTask.Env)...)
+
+	// Run steps
+	if chosenTask.Parallel == false {
+		for _, step := range chosenTask.Steps {
+			platform.RunCommand(step, environment, false)
+		}
+	} else {
+		var wg sync.WaitGroup
+		wg.Add(len(chosenTask.Steps))
+		for _, step := range chosenTask.Steps {
+			go func(step string) {
+				defer wg.Done()
+				platform.RunCommand(step, environment, false)
+			}(step)
+		}
+		wg.Wait()
 	}
 }
