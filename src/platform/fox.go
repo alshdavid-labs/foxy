@@ -12,6 +12,7 @@ type FoxyConfig map[string]FoxyTask
 // FoxyTask is what makes up the yaml files
 type FoxyTask struct {
 	Set      bool
+	Silent   bool              `yaml:"silent"`
 	Parallel bool              `yaml:"parallel"`
 	Default  bool              `yaml:"default"`
 	Platform string            `yaml:"platform"`

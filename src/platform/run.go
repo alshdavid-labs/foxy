@@ -1,10 +1,7 @@
 package platform
 
 import (
-	"bytes"
 	"fmt"
-	"io"
-	"log"
 	"os"
 	"os/exec"
 	"runtime"
@@ -21,8 +18,8 @@ type EnvVar struct {
 }
 
 // RunCommand lets you run a command in your platform's shell
-func RunCommand(command string, environment []EnvVar, useOSEnv bool) {
-	var stdoutBuf, stderrBuf bytes.Buffer
+func RunCommand(command string, environment []EnvVar, silent bool) {
+	// var stdoutBuf, stderrBuf bytes.Buffer
 	var cmd *exec.Cmd
 
 	if runtime.GOOS == "windows" {
@@ -38,24 +35,24 @@ func RunCommand(command string, environment []EnvVar, useOSEnv bool) {
 	}
 	cmd.Env = append(os.Environ(), environments...)
 
-	stdoutIn, _ := cmd.StdoutPipe()
-	stderrIn, _ := cmd.StderrPipe()
+	// stdoutIn, _ := cmd.StdoutPipe()
+	// stderrIn, _ := cmd.StderrPipe()
 
-	var errStdout, errStderr error
-	stdout := io.MultiWriter(os.Stdout, &stdoutBuf)
-	stderr := io.MultiWriter(os.Stderr, &stderrBuf)
-	err := cmd.Start()
-	if err != nil {
-		log.Fatalf("cmd.Start() failed with '%s'\n", err)
-	}
+	// var errStdout, errStderr error
+	// stdout := io.MultiWriter(os.Stdout, &stdoutBuf)
+	// stderr := io.MultiWriter(os.Stderr, &stderrBuf)
+	cmd.Start()
+	// if err != nil {
+	// 	log.Fatalf("cmd.Start() failed with '%s'\n", err)
+	// }
 
-	go func() {
-		_, errStdout = io.Copy(stdout, stdoutIn)
-	}()
+	// go func() {
+	// 	_, errStdout = io.Copy(stdout, stdoutIn)
+	// }()
 
-	go func() {
-		_, errStderr = io.Copy(stderr, stderrIn)
-	}()
+	// go func() {
+	// 	_, errStderr = io.Copy(stderr, stderrIn)
+	// }()
 
 	_ = cmd.Wait()
 }

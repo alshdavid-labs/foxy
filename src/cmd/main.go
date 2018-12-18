@@ -51,7 +51,7 @@ func main() {
 	}
 
 	if chosenTask.Set == false {
-		fmt.Printf("No sequence selected")
+		fmt.Println("No task selected")
 		os.Exit(1)
 	}
 

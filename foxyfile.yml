@@ -17,20 +17,20 @@ build:
 build:windows:
   env:
     GOOS=windows
-    GOARCH=386
+    GOARCH=amd64
   steps:
     - cd src && go build -o ../bin/win32/foxy.exe cmd/main.go 
 
 build:linux:
   env:
     GOOS=linux
-    GOARCH=386
+    GOARCH=amd64
   steps:
     - cd src && go build -o ../bin/linux/foxy cmd/main.go 
 
 build:darwin:
   env:
     GOOS=darwin
-    GOARCH=386
+    GOARCH=amd64
   steps:
     - cd src && go build -o ../bin/darwin/foxy cmd/main.go 
