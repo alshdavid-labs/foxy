@@ -3,7 +3,9 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
-
+sand
+sandbox
+debug
 # Compiled source
 *.com
 *.class

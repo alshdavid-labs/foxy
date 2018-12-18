@@ -6,6 +6,7 @@ import (
 	"foxy/platform"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"sync"
 )
 
@@ -18,6 +19,10 @@ var acceptedFileNames = []string{
 	"FOXYFILE",
 	"foxy",
 	"FOXY",
+	"taskfile",
+	"TASKFILE",
+	"taskfile.yml",
+	"TASKFILE.yml",
 }
 
 func tryGetFoxyFile(defaults []string) string {
@@ -62,16 +67,38 @@ func main() {
 	// Run steps
 	if chosenTask.Parallel == false {
 		for _, step := range chosenTask.Steps {
-			platform.RunCommand(step, environment, false)
+			cmd := platform.GenerateCommand(step, environment)
+			platform.RunCommand(cmd, chosenTask.Silent)
 		}
 	} else {
+		var cmds []*exec.Cmd
 		var wg sync.WaitGroup
-		wg.Add(len(chosenTask.Steps))
+
+		defer func() {
+			fmt.Println("Process clean up")
+			for _, cmd := range cmds {
+				if cmd != nil {
+					cmd.Process.Kill()
+				}
+			}
+		}()
+
+		if chosenTask.AbortOnExit == true {
+			wg.Add(1)
+		} else {
+			wg.Add(len(chosenTask.Steps))
+		}
 		for _, step := range chosenTask.Steps {
-			go func(step string) {
+			cmd := platform.GenerateCommand(step, environment)
+			cmds = append(cmds, cmd)
+
+			go func(cmd *exec.Cmd, step string) {
 				defer wg.Done()
-				platform.RunCommand(step, environment, false)
-			}(step)
+				platform.RunCommand(cmd, chosenTask.Silent)
+				if chosenTask.AbortOnExit == true {
+					fmt.Println("Exit triggered by", step)
+				}
+			}(cmd, step)
 		}
 		wg.Wait()
 	}

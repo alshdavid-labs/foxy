@@ -1,6 +1,0 @@
-default:
-  default: true
-  silent: true
-  steps:
-    - echo 1
-    - echo 2

@@ -1,11 +1,15 @@
 dev:
   default: true
   steps:
-    - cd src && go build -o ../bin/foxy cmd/main.go
+    - cd src && go build -o ../debug/foxy cmd/main.go
 
 dev(windows):
   steps:
-    - cd src && go build -o ../bin/foxy.exe cmd/main.go
+    - cd src && go build -o ../debug/foxy.exe cmd/main.go
+
+clean:
+  steps:
+    - rm -r -f bin
 
 build:
   parallel: true

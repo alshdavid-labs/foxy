@@ -11,14 +11,15 @@ type FoxyConfig map[string]FoxyTask
 
 // FoxyTask is what makes up the yaml files
 type FoxyTask struct {
-	Set      bool
-	Silent   bool              `yaml:"silent"`
-	Parallel bool              `yaml:"parallel"`
-	Default  bool              `yaml:"default"`
-	Platform string            `yaml:"platform"`
-	Steps    []string          `yaml:"steps,flow"`
-	Env      map[string]string `yaml:"env,flow"`
-	EnvFile  string            `yaml:"env_file"`
+	Set         bool
+	Silent      bool              `yaml:"silent"`
+	AbortOnExit bool              `yaml:"abort_on_exit"`
+	Parallel    bool              `yaml:"parallel"`
+	Default     bool              `yaml:"default"`
+	Platform    string            `yaml:"platform"`
+	Steps       []string          `yaml:"steps,flow"`
+	Env         map[string]string `yaml:"env,flow"`
+	EnvFile     string            `yaml:"env_file"`
 }
 
 // CastEnvFile takes a location of an env file, loads it
