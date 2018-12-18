@@ -1,0 +1,36 @@
+dev:
+  default: true
+  steps:
+    - cd src && go build -o ../bin/foxy cmd/main.go
+
+dev(windows):
+  steps:
+    - cd src && go build -o ../bin/foxy.exe cmd/main.go
+
+build:
+  parallel: true
+  steps:
+    - foxy build:windows
+    - foxy build:linux
+    - foxy build:darwin
+
+build:windows:
+  env:
+    GOOS=windows
+    GOARCH=386
+  steps:
+    - cd src && go build -o ../bin/win32/foxy.exe cmd/main.go 
+
+build:linux:
+  env:
+    GOOS=linux
+    GOARCH=386
+  steps:
+    - cd src && go build -o ../bin/linux/foxy cmd/main.go 
+
+build:darwin:
+  env:
+    GOOS=darwin
+    GOARCH=386
+  steps:
+    - cd src && go build -o ../bin/darwin/foxy cmd/main.go 

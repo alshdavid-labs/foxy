@@ -1,0 +1,26 @@
+{
+  "name": "foxy-cli",
+  "version": "1.0.0",
+  "description": "A simple yaml based task runner\r create a `foxy.yml` in the root of your project and run",
+  "main": "index.js",
+  "scripts": {
+    "preinstall": "npm install && node node-install.js --pre",
+    "postinstall": "node node-install.js --post"
+  },
+  "bin": {
+    "foxy": "./.bin/foxy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alshdavid/foxy.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alshdavid/foxy/issues"
+  },
+  "homepage": "https://github.com/alshdavid/foxy#readme",
+  "dependencies": {
+    "request": "^2.88.0"
+  }
+}
